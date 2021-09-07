@@ -1,0 +1,23 @@
+---
+- hosts: exporter
+  become: yes
+  tasks:
+  - name: Download node_exporter package
+    unarchive:
+      src: https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz
+      dest: /tmp/
+      remote_src: yes
+  - name: Copy a "sudoers" file on the remote machine for editing
+    copy:
+      src: /tmp/node_exporter-0.18.1.linux-amd64/
+      dest: /usr/local/bin/node_exporter
+      remote_src: yes
+  - name: Copy node_exporter.service to /etc/systemd/system
+    template:
+      src: node-exporter.service
+      dest: /etc/systemd/system/
+  - name: start myservice
+    systemd:
+      state: started 
+      name: node-exporter 
+      daemon_reload: yes

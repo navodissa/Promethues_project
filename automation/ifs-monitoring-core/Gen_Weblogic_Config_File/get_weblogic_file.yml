@@ -1,0 +1,91 @@
+---
+- hosts: windows
+  #vars_files:
+   #- get_weblogic_vars_file.yml
+  gather_facts: no
+
+  tasks:
+  
+  - name: create a folder in the server
+    win_file:
+      path: G:\Scripts
+      state: directory
+
+  - name: create a wls-exporter folder in the server
+    win_file:
+      path: G:\wls-exporter
+      state: directory    
+      
+  #- name: copy get_xml_infor powershell script
+   # win_copy:
+   #   src: get_weblogic_file.ps1
+   #   dest: G:\Scripts\
+
+  - name: copy wls-exporter war files
+    win_copy:
+      src: wls-exporter.war
+      dest: G:\wls-exporter\  
+
+  - name: copy lib jar files
+    win_copy:
+      src: lib/
+      dest: G:\TEST_ITMB1_TST1APP9\MWS\wls_domain\TST1APP9\lib
+      #G:\TEST_ITMB1_TST1APP9\MWS\wls_domain\TST1APP9\lib
+      #dest: G:\TEST\{{ custcode }}{{ environmenttype }}\MWS\wls_domain\{{ custcode }}{{ environmenttype }}\lib\    
+  
+  - name: copy Python Scripts to the server
+    win_copy:
+      src: PythonScripts/
+      dest: G:\wls-exporter
+
+  - name: find the target yaml file
+    win_find:
+     paths: G:\wls-exporter\
+     patterns: ['*installer.py']
+    register: files_to_copy 
+
+  - name: fetch file from remote host
+    fetch:
+      src: "{{ item.path }}"
+      dest: ./
+      flat: yes
+    with_items: "{{ files_to_copy.files }}"  
+    
+  - name: Executing all the Python Scripts dynamically on target servers
+    win_shell: .\wlst.cmd '{{ item.path }}'
+    args:
+      chdir: G:\TEST_ITMB1_TST1APP9\MWS\mw_home\mws\oracle_common\common\bin
+    with_items: "{{ files_to_copy.files }}" 
+
+  #- name: execute get_xml_infor powershell script
+  #  win_shell:
+  #    G:\Scripts\get_weblogic_file.ps1
+
+  #- name: fetch xml file from remote host
+   # fetch:
+   #   src: G:\Scripts\install_xml_output.json
+   #   dest: ./
+   #   flat: yes  
+
+  #- name: find the target yaml file
+   # win_find:
+     #paths: G:\wls-exporter\
+    # paths: lib/
+    # patterns: ['*installer.py']
+    #register: files_to_copy 
+
+ # - name: fetch target yaml file from remote host
+ #   fetch:
+ #     src: "{{ item.path }}"
+ #   dest: ./
+  #    flat: yes
+   # with_items: "{{ files_to_copy.files }}"  
+    
+  #- name: Executing all the Python Scripts dynamically on target servers
+  #  win_shell: .\wlst.cmd '{{ item.path }}'
+  #  args:
+      #G:\TEST_ITMB1_TST1APP9\MWS\mw_home\mws\oracle_common\common\bin
+      #chdir: G:\TEST_{{ custcode }}{{ environmenttype }}\MWS\mw_home\mws\oracle_common\common\bin\
+    #  chdir: G:\TEST_ITMB1_TST1APP9\MWS\mw_home\mws\oracle_common\common\bin
+   # with_items: "{{ files_to_copy.files }}"    
+      

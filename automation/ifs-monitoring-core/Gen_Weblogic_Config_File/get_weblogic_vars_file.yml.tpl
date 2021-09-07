@@ -1,0 +1,2 @@
+custcode: "${custcode}"
+environmenttype: "${environmenttype}"

@@ -1,0 +1,21 @@
+---
+
+#username: dbmonitor
+#password: 3p5HhcqqZd7SYKGQ
+#host: 10.241.79.21
+#port: 1521
+#sid: ITMAPPR
+
+#username: dbmonitor
+#password: EZfD3MajtlWZV1nis7se
+#host: 10.242.7.100
+#port: 1521
+#sid: ITMBPRD
+
+
+username: dbmonitor
+password: dbmonitorpswd
+host: 40.112.130.225
+port: 1521
+sid: ITMBPRD
+

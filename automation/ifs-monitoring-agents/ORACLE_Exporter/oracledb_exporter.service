@@ -1,0 +1,17 @@
+[Unit]
+Description=Service for oracle telemetry client
+After=network.target
+[Service]
+Type=simple
+Environment=ORACLE_HOME=/exporter/oracle_exporter/instantclient_18_5
+
+Environment=DEFAULT_METRICS=/exporter/oracle_exporter/oracledb_exporter.0.2.9-ora18.5.linux-amd64/default-metrics.toml
+
+Environment=DATA_SOURCE_NAME="#data_source#"
+
+Environment=LD_LIBRARY_PATH=/exporter/oracle_exporter/instantclient_18_5
+
+ExecStart=/exporter/oracle_exporter/oracledb_exporter.0.2.9-ora18.5.linux-amd64/oracledb_exporter --log.level error --web.listen-address 0.0.0.0:#port#
+
+[Install]
+WantedBy=multi-user.target

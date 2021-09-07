@@ -1,0 +1,36 @@
+--  Date: 2020-02-06
+--
+--  Purpose: Configure grants for monitoring
+--
+--  Date    Sign   History
+--  ------  ----   -----------------------------------------------------------------
+--  200206  HHANSE First version
+
+-----------------------------------------------------------------------------------
+SET SERVEROUTPUT ON
+
+-- Set GRANTS    - RUN AS USER SYS
+
+define appowner_ = 'TESTAPP';
+define monitoringuser_ = 'TESTMONITORING';
+
+GRANT SELECT ON GV_$LOCK TO &appowner_  WITH GRANT OPTION;
+GRANT SELECT ON GV_$TRANSACTION TO  &appowner_  WITH GRANT OPTION;
+GRANT SELECT ON GV_$SQLAREA TO  &appowner_  WITH GRANT OPTION;
+GRANT SELECT ON V_$SGAINFO TO  &appowner_ ;
+GRANT SELECT ON V_$SGASTAT TO  &appowner_ ;
+GRANT SELECT ON V_$PGASTAT TO  &appowner_ ;
+GRANT SELECT ON V_$SYSSTAT TO  &appowner_ ;
+GRANT SELECT ON V_$RECOVERY_FILE_DEST TO &appowner_ ;
+GRANT SELECT ON V_$RMAN_BACKUP_JOB_DETAILS TO &appowner_ ;
+GRANT SELECT ON V_$DATABASE_BLOCK_CORRUPTION TO &appowner_ ;
+GRANT SELECT ON DBA_TEMP_FREE_SPACE TO &appowner_ ;
+GRANT SELECT ON DBA_SEGMENTS TO &appowner_;
+
+create or replace view AMM_X$DBGALERTEXT as select * from sys.X$DBGALERTEXT;
+
+GRANT SELECT ON AMM_X$DBGALERTEXT TO &appowner_ ;
+
+GRANT SELECT ON GV_$SESSION TO &monitoringuser_ ;
+GRANT SELECT ON GV_$PROCESS TO &monitoringuser_ ;
+GRANT SELECT ON &appowner_..INSTALL_TEM_SYS_TAB TO &monitoringuser_ ;

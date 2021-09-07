@@ -1,0 +1,40 @@
+mode: Apps10
+duration: true
+fsm_base_url: https://TESTfsmkyoctest.TESTcloud.net
+fsm_monit_user: TEST_ADMIN
+fsm_monit_pass: CgQIJRT2R/OMK9VUiWaIsSi1PWcvtlKb4fkk
+URLS:
+  RESPONSE_FSM_MAIN: https://TESTfsmkyoctest.TESTcloud.net/
+  RESPONSE_FSM_MOBILE: https://TESTfsmkyoctest.TESTcloud.net/mobile
+  RESPONSE_FSM_MOBILEMONITOR: https://cosy-fsm-dev.TEST.cloud/mobile/messages/ping
+  RESPONSE_FSM_WEB: https://TESTfsmkyoctest.TESTcloud.net/webclient
+  RESPONSE_FSM_CP: https://TESTfsmkyoctest.TESTcloud.net/webclient
+  RESPONSE_FSM_WP: https://TESTfsmkyoctest.TESTcloud.net/webclient
+  RESPONSE_FSM_MIS: https://TESTfsmkyoctest.TESTcloud.net/metrixintegrationservice
+CERTIFICATES:
+  CERT_FSM_kyoc: https://TESTfsmkyoctest.TESTcloud.net
+LABELS:
+  CUSTOMERCODE: kyoc
+  ENVIRONMENTTYPE: tst
+  TESTVERSION: fsm6
+INFO:
+  MANIFEST: 86400
+HTTP:
+  CERT_FSM_kyoc: 86400
+  RESPONSE_FSM_MAIN: 120
+  RESPONSE_FSM_MOBILE: 120
+  RESPONSE_FSM_MOBILEMONITOR: 120
+  RESPONSE_FSM_CP: 120
+  RESPONSE_FSM_WP: 120
+  RESPONSE_FSM_WEB: 120
+  RESPONSE_FSM_MIS: 120
+FSM:
+  USER_LOGIN: 600
+  SMART_CLIENT_LOGON: 600
+  WEB_CLIENT_LOGON: 600
+  DB_HEALTH: 600
+  QUERY_HEALTH: 600
+  SERVER_HEALTH: 600
+  HEALTH_CHECK_STATUS: 600
+  QUERY_TIME: 600   
+  SERVER_INFO_TIME: 600

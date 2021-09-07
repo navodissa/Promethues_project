@@ -1,0 +1,11 @@
+---
+target_path: G:\TESTmon\
+source_path: TESTamm_exporter
+win_shell: cd G:\TESTmon\TESTamm_exporter |  powershell -executionPolicy bypass -noexit -file "G:\TESTmon\TESTamm_exporter\install_TESTamm_exporter_service.ps1"
+win_shell_rcf: cd G:\TESTmon\TESTamm_exporter |  powershell -executionPolicy bypass -noexit -file "G:\TESTmon\TESTamm_exporter\restart_TESTamm_exporter_service.ps1"
+# vaultName: csc-ops-tst-moni-euwe-kv
+# vaultSecretName: vm-password
+# servicePrincipalId: b7a6c70b-58cd-41d6-97cb-5e963aa0320e
+# servicePrincipalPassword: ~s6Im_fl8F6n5a~ucRWp~8.Y38Ww0-6ch4
+# tenantId: tenant_id
+

@@ -1,0 +1,113 @@
+---
+- hosts: localhost
+  connection: local
+  tasks:
+
+  - include_vars: ORACLE-cnf.yml
+  #- include_vars: Inventory_Oracle_vars.yml
+  - include_vars: ansible_vars_file.yml
+  - include_vars: oracledb-static-vars.yml 
+  
+
+  - name: Locally creating new service file
+    shell: cp {{ source_path }}oracledb_exporter.service {{ source_path }}oracledb_exporter_{{ sid }}.service
+
+  - name: Create database if doesn't exist
+    command: >
+      mysql --user="{{ mysql_user }}" --password="{{ mysqladmin_password }}" --host="csc-mon-tst-eu-mysql.mysql.database.azure.com"  --execute="create database if not exists prometheus_service_ports"
+    check_mode: no
+    changed_when: False
+
+  - name: Create table if doesn't exist
+    command: >
+      mysql --user="{{ mysql_user }}" --password="{{ mysqladmin_password }}" prometheus_service_ports --host="{{ mysql_host }}"  --batch --skip-column-names --execute="CREATE TABLE IF NOT EXISTS oracle_exporter_port (ID INT NOT NULL AUTO_INCREMENT,CUST_DB_NAME VARCHAR(10),PRIMARY KEY(ID)) AUTO_INCREMENT=10001;"
+    check_mode: no
+    changed_when: False  
+
+  - name: Retrieve Port from mysql
+    command: >
+      mysql --user="{{ mysql_user }}" --password="{{ mysqladmin_password }}" prometheus_service_ports
+      --host="{{ mysql_host }}"  --batch --skip-column-names --execute="SELECT ID from oracle_exporter_port where CUST_DB_NAME='{{ sid }}'"
+    register: exp_port
+    check_mode: no
+    changed_when: False 
+
+  - debug:
+      msg: "{{ exp_port }}"
+
+  - debug:
+      msg: "{{ sid }}"
+  
+  - name: Insert customer SID into mysql (Port will be auto-generated)
+    command: >
+      mysql --user="{{ mysql_user }}" --password="{{ mysqladmin_password }}" prometheus_service_ports
+      --host="{{ mysql_host }}"  --batch --skip-column-names --execute="insert into oracle_exporter_port (CUST_DB_NAME) values ('{{ sid }}')"
+    check_mode: no
+    changed_when: False
+    when: exp_port.stdout == ""
+
+  - name: Retrieve Port from mysql
+    command: >
+      mysql --user="{{ mysql_user }}" --password="{{ mysqladmin_password }}" prometheus_service_ports
+      --host="{{ mysql_host }}"  --batch --skip-column-names --execute="SELECT ID from oracle_exporter_port where CUST_DB_NAME='{{ sid }}'"
+    register: current_port
+    check_mode: no
+    changed_when: False
+    when: exp_port.stdout == ""
+
+  - debug:
+      msg: "{{ current_port }}"  
+    
+  - debug:
+      msg: "{{ exp_port }}"
+
+  - debug:
+      msg: "{{ sid }}"
+  
+
+  - name: Locally creating new service file
+    shell: sh configUpdate.sh '{{ username }}/{{ password }}@{{ host }}:{{ port }}/{{ sid }}' {{ source_path }}oracledb_exporter_{{ sid }}.service {{ current_port.stdout_lines[0] }}
+    register: servicefile
+    when: exp_port.stdout == ""
+  
+  - name: Locally creating new service file
+    shell: sh configUpdate.sh '{{ username }}/{{ password }}@{{ host }}:{{ port }}/{{ sid }}' {{ source_path }}oracledb_exporter_{{ sid }}.service {{ exp_port.stdout_lines[0] }}
+    register: servicefile
+    when: exp_port.stdout != ""
+
+  - debug:
+      msg: "{{ servicefile }}"
+
+
+- hosts: exporter-eu:exporter-us
+  become: yes
+  tasks:
+  - include_vars: ORACLE-cnf.yml
+#  - include_vars: Inventory_Oracle_vars.yml
+  - include_vars: ansible_vars_file.yml
+  - include_vars: oracledb-static-vars.yml
+  
+  - name: copy system service file
+    template:
+      src: '{{ source_path }}oracledb_exporter_{{ sid }}.service'
+      dest: /etc/systemd/system/
+
+  - name: Just force systemd to reread configs (2.4 and above)
+    systemd:
+      daemon_reload: yes
+  
+  - name: Enable Oracle-Exporter service 
+    systemd:
+      name: oracledb_exporter_{{ sid }}
+      enabled: yes
+      
+  - name: start service
+    systemd:
+      state: started
+      name: oracledb_exporter_{{ sid }}
+
+  - name: restart service
+    systemd:
+      state: restarted
+      name: oracledb_exporter_{{ sid }}
+

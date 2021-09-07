@@ -1,0 +1,43 @@
+---
+- hosts: exporter
+  become: yes
+  tasks:
+#    - name: install nginx
+#      apt: name=nginx state=latest
+#    - name: start nginx
+#      service:
+#          name: nginx
+#          state: started
+    - name: download nginx exporter
+      shell: "wget https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v0.7.0/nginx-prometheus-exporter-0.7.0-linux-amd64.tar.gz"
+  
+    - name: Extract exporter zip
+      shell: "tar -xf nginx-prometheus-exporter-0.7.0-linux-amd64.tar.gz"
+  
+    - name: Copying exporter to execute path
+      shell: "mv nginx-prometheus-exporter /usr/local/bin"
+  
+#    - name: copy system service file
+#      template:
+#        src: NGINX/nginx.conf
+#        dest: /etc/nginx/
+
+#    - name: restart nginx
+#      service:
+#          name: nginx
+#          state: restarted
+
+    - name: copy system service file
+      template:
+          src: NGINX/nginx-exporter.service
+          dest: /etc/systemd/system/
+   
+    - name: Enable Nginx-Exporter service
+      systemd:
+        name: nginx-exporter.service
+        enabled: yes
+
+    - name: start service
+      systemd:
+         state: started
+         name: nginx-exporter

@@ -1,0 +1,32 @@
+- hosts: exporter-eu
+  become: yes
+  tasks:
+  - include_vars: ORACLE-cnf.yml
+  - include_vars: Inventory_Oracle_vars.yml
+  #- include_vars: ansible_vars_file.yml
+
+
+  - name: copy system service file
+    template:
+      src: '{{ source_path }}oracledb_exporter_{{ sid }}.service'
+      dest: /etc/systemd/system/
+
+  - name: Just force systemd to reread configs (2.4 and above)
+    systemd:
+      daemon_reload: yes
+  
+  - name: Enable Oracle-Exporter service 
+    systemd:
+      name: oracledb_exporter_{{ sid }}
+      enabled: yes
+      
+  - name: start service
+    systemd:
+      state: started
+      name: oracledb_exporter_{{ sid }}
+
+  - name: restart service
+    systemd:
+      state: restarted
+      name: oracledb_exporter_{{ sid }}
+

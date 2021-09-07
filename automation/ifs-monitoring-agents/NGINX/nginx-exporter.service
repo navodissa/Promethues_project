@@ -1,0 +1,15 @@
+[Unit]
+Description=NGINX Exporter Service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=TESTsrvadmin
+ExecStart=/usr/local/bin/nginx-prometheus-exporter -web.listen-address=localhost:9131 -nginx.scrape-uri http://localhost:81/metrics
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

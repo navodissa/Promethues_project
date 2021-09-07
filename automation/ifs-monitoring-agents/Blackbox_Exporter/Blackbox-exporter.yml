@@ -1,0 +1,30 @@
+---
+- hosts: exporter
+  become: yes
+  tasks:
+
+    - name: Copy traget.yml to tmp
+      copy:
+        src: target.yml
+        dest: /tmp/
+      delegate_to: "{{ item }}"
+      delegate_facts: true
+      loop: "{{ groups['prometheus'] }}"
+    
+    - name: append contents of target.yml to /usr/local/bin/prometheus/target.yml
+      shell: cat target.yml >> /usr/local/bin/prometheus/target.yml
+      args:
+        chdir: /tmp/
+      delegate_to: "{{ item }}"
+      delegate_facts: true
+      loop: "{{ groups['prometheus'] }}"
+
+    - name: Enable Blackbox service
+      systemd:
+        name: blackbox.service
+        enabled: yes
+
+    - name: start service
+      systemd:
+         state: started
+         name: blackbox

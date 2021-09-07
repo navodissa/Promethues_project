@@ -1,0 +1,12 @@
+---
+- hosts: windows
+  gather_facts: no
+  tasks:
+    - name: Copying requisite files keeping the filename
+      win_copy:
+        src: /home/pocadmin/test/TESTamm_exporter.zip
+        dest: C:\temp\TESTamm_exporter.zip
+
+    - win_shell: cd C:\temp\TESTamm_exporter\TESTamm_exporter |  powershell -executionPolicy bypass -noexit -file "C:\temp\TESTamm_exporter\TESTamm_exporter\install_TESTamm_exporter_service.ps1"
+     
+

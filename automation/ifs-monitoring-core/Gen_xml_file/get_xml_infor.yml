@@ -1,0 +1,38 @@
+---
+- hosts: windows
+  gather_facts: no
+
+  tasks:
+  
+  - name: create a folder in the server
+    win_file:
+      path: E:\Scripts
+      state: directory
+      
+  - name: copy get_xml_infor powershell script
+    win_copy:
+      src: get_xml_infor.ps1
+      dest: E:\Scripts\
+
+  - name: execute get_xml_infor powershell script
+    win_shell:
+      E:\Scripts\get_xml_infor.ps1
+
+  - name: fetch xml file from remote host
+    fetch:
+      src: E:\Scripts\install_xml_output.json
+      dest: ./
+      flat: yes  
+
+  - name: find the target yaml file
+    win_find:
+     paths: E:\Scripts\
+     patterns: ['*target.yml']
+    register: files_to_copy 
+
+  - name: fetch target yaml file from remote host
+    fetch:
+      src: "{{ item.path }}"
+      dest: ./
+      flat: yes
+    with_items: "{{ files_to_copy.files }}"    

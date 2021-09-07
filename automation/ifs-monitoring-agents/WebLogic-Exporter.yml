@@ -1,0 +1,20 @@
+---
+- hosts: windows
+  gather_facts: no
+  tasks:  
+  - name: Copying all the python scripts to Target VM
+    win_copy:
+      src: "{{ item }}"
+      dest: E:\wls-exporter\
+    with_fileglob:
+        - Weblogic_exporter/*
+
+
+  - name: Executing all the Python Scripts dynamically on target servers
+    win_shell: |
+      files=(*'.py')
+      for file in "${files[@]}"; do
+         E:\TEST\msadprd\MWS\mw_home\mws\oracle_common\common\bin\wlst.cmd  "$file"
+      done
+    args:
+      chdir: E:\wls-exporter\

@@ -1,0 +1,15 @@
+---
+- hosts: windows
+  gather_facts: no
+  tasks:
+    - name: Copying requisite files keeping the filename
+      win_copy:
+        src: mssql/
+        dest: C:\temp\mssql
+
+    - name: execute powershell script
+      win_shell: 
+        cd C:\temp\mssql |  powershell -executionPolicy bypass -noexit -file "C:\temp\mssql\install_mssql_exporter.ps1"
+
+     
+

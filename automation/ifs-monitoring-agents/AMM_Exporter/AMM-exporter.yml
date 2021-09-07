@@ -1,0 +1,20 @@
+---
+- hosts: windows
+  gather_facts: no
+  tasks:
+    - include_vars: AMM-vars.yml
+
+    - name: Create directory in E drive as TESTmon
+      win_file:
+        path: G:/TESTmon
+        state: directory
+      
+
+    - name: Copying requisite files keeping the filename
+      win_copy:
+        src: '{{ source_path}}'
+        dest: '{{ target_path }}'
+
+    - win_shell: '{{ win_shell }}' 
+    - win_shell: '{{ win_shell_rcf }}'     
+

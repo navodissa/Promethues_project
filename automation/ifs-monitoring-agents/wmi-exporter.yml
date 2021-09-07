@@ -1,0 +1,12 @@
+---
+- hosts: windows
+  gather_facts: no
+  tasks:
+    - name: Install Remote Connection Manager from msi package
+      win_get_url:
+        url: https://github.com/prometheus-community/windows_exporter/releases/download/v0.14.0/windows_exporter-0.14.0-amd64.msi
+        dest: C:\temp\windows_exporter.msi
+    - name: Start wmi-exporter as system service 
+      win_package:
+        path: C:\temp\windows_exporter.msi
+        state: present

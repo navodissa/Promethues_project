@@ -1,0 +1,11 @@
+---
+source_path: ./
+config_file_path: ORACLE_Exporter/oracle.yml
+source_system_path: oracledb_exporter.service
+
+mysql_user: TESTsrvadmin@csc-mon-tst-eu-mysql
+
+mysql_host: csc-mon-tst-eu-mysql.mysql.database.azure.com
+
+mysqladmin_password: dJzGZ493RZyUvm_8mh6j
+

@@ -1,0 +1,22 @@
+---
+- hosts: windows
+  gather_facts: no
+  tasks:
+    - name: Create directory structure
+      win_file:
+        path: C:\IIS_EXPORTER
+        state: directory
+
+    - name: Copying requisite files keeping the filename
+      win_copy:
+        src: IIS/windows_exporter.exe
+        dest: C:\IIS_EXPORTER\
+
+    - name: Create a new service
+      win_service:
+        name: IIS Exporter
+        path: C:\IIS_EXPORTER\windows_exporter.exe --collectors.enabled "iis" --telemetry.addr ":9185"
+        #path: C:\IIS_EXPORTER\windows_exporter.exe --collectors.enabled "iis" --telemetry.addr "hostvars[inventory_hostname]['ansible_default_ipv4']['address']:9185"
+
+    
+

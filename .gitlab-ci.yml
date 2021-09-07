@@ -1,0 +1,362 @@
+stages:
+    - Network
+    - GetTagsJson
+    - GenCustomerDBVarFile
+    - GetLocalIP
+    - GenWinInventory
+    - InstallWMIAgents
+    - GenWebLogicFile
+    - GenMWSAMMConfigFile
+    - CopyMWSAMMConfigFilesToShare
+    - InstallAMMExporter
+    - InstallTASIISAgents
+    - InstallMSSQLAgents
+    - GenCMPVarFile
+    - GenCMPInventory
+    - OracleInventoryGen
+    - InstallOracleAgent
+    - UpdatePromExpBlock
+
+Execute Network stage:
+  stage: Network
+  script:
+    - cd automation/TEST-monitoring-core/Network
+    - terraform get
+    - terraform init -input=false
+    - terraform plan  -input=false
+    - terraform apply -auto-approve
+  only:
+    refs:
+    - Apps9_Test_Pipeline
+    variables:
+        - $TF_VAR_TESTversion == "app9"
+  tags:
+    - terraform-acc 
+  artifacts:
+    paths:
+      - automation/TEST-monitoring-core/Network/network.ps1  
+
+Get Tags Json:
+  stage: GetTagsJson
+  before_script:
+    - echo "Start"               
+  script:  
+    - cd automation/TEST-monitoring-core/Network
+    - powershell -noprofile -noninteractive -executionpolicy Bypass -File network.ps1
+    - echo "Done"
+  tags:
+    - delivery01-win
+  only:
+    refs:
+    - Apps9_Test_Pipeline
+    variables:
+      - $TF_VAR_TESTversion == "app9"
+  artifacts:
+    paths:
+      - automation/TEST-monitoring-core/Network/net_int.ifvars.json
+        
+Generate DB Var File for Customer:
+  stage: GenCustomerDBVarFile
+  script:
+    - cd automation/TEST-monitoring-core/Get_exporter_varfile/App9_Exporter_Vars
+    - cp ../../Network/net_int.ifvars.json .
+    - terraform get
+    - terraform init -input=false
+    - terraform plan -input=false -var-file="../../Network/net_int.ifvars.json"
+    - terraform apply -auto-approve -var-file="../../Network/net_int.ifvars.json"
+  only:
+    refs:
+    - Apps9_Test_Pipeline  
+    variables:
+        - $TF_VAR_TESTversion == "app9"
+  tags:
+    - terraform-acc 
+  artifacts:
+    paths:
+      - automation/TEST-monitoring-core/Get_exporter_varfile/App9_Exporter_Vars/customer-oracledb-vars*.yml   
+      - automation/TEST-monitoring-core/Get_exporter_varfile/App9_Exporter_Vars/export-cust-variables.sh       
+
+
+
+Execute Get Local IP stage:
+  stage: GetLocalIP
+  script:
+    - cd automation/TEST-monitoring-core/App9
+    - bash GrepHostDetails.sh "$TF_VAR_Hostname"
+    
+  only:
+    refs:
+    - Apps9_Test_Pipeline   
+    variables:
+        - $TF_VAR_TESTversion == "app9"
+  tags:
+    - terraform-acc 
+  artifacts:
+    paths:
+      - automation/TEST-monitoring-core/App9/app9ip.json
+
+Execute Gen WIN Inventory stage:
+  stage: GenWinInventory
+  script:
+    - cd automation/TEST-monitoring-core/App9/win
+    - terraform get
+    - terraform init -input=false
+    - terraform plan -input=false -var-file="../app9ip.json"
+    - terraform apply -auto-approve -var-file="../app9ip.json"
+  only:
+    refs:
+    - Apps9_Test_Pipeline   
+    variables:
+        - $TF_VAR_TESTversion == "app9"
+  tags:
+    - terraform-acc 
+  artifacts:
+    paths:
+      - automation/TEST-monitoring-core/App9/win/inventory.cfg      
+
+Install WMI Agent:
+  stage: InstallWMIAgents
+  script:
+    - cd automation/TEST-monitoring-agents
+    - cp ../TEST-monitoring-core/App9/win/inventory.cfg .
+    - cp ../TEST-monitoring-core/ansible/ansible.cfg .
+    - ansible-playbook -i inventory.cfg wmi-exporter.yml 
+  only:
+    refs:
+    - Apps9_Test_Pipeline
+    variables:
+        - $TF_VAR_TESTversion == "app9_temp" && $TF_VAR_task == "wmi"
+  tags:
+    - terraform-acc
+
+Execute Gen WebLogic py File:
+  stage: GenWebLogicFile
+  script:
+    - cd automation/TEST-monitoring-core/Gen_Weblogic_Config_File
+    - bash GetWebLogicDetails.sh "$TF_VAR_Hostname"
+    - cp ../App9/win/inventory.cfg .
+    - cp ../ansible/ansible.cfg .
+    - ansible-playbook -i inventory.cfg get_weblogic_file.yml
+  only:
+    refs:
+    - Apps9_Test_Pipeline    
+    variables:
+        - $TF_VAR_TESTversion == "app9" && $TF_VAR_task == "wmi_temp"
+  tags:
+    - terraform-acc    
+  artifacts:
+    paths:
+      - automation/TEST-monitoring-core/Gen_Weblogic_Config_File/*installer.py
+
+
+
+Generate MWS AMM Config for Customer:
+  stage: GenMWSAMMConfigFile
+  script:
+    - cd automation/TEST-monitoring-core/App9
+    - bash GrepMwsDetails.sh "$TF_VAR_Hostname"
+
+  only:
+    refs:
+    - Apps9_Test_Pipeline   
+    variables:
+        - $TF_VAR_TESTversion == "app9" && $TF_VAR_TESTrole == "mws"
+  tags:
+    - terraform-acc 
+  artifacts:
+    paths:  
+      - automation/TEST-monitoring-core/App9/config_TESTversion_APPS9_MWS*.yaml   
+      - automation/TEST-monitoring-core/App9/config_TESTversion_APPS9_Central*.yaml
+
+
+Copy MWS AMM Config files to File share :
+  stage: CopyMWSAMMConfigFilesToShare
+  script:
+    - cd automation/TEST-monitoring-core/CopyFilesToShare
+    #- chown -R gitlab-runner:gitlab-runner ../../TEST-monitoring-core/Gen_xml_file/*target.yml
+    #- cp ../../TEST-monitoring-core/Gen_xml_file/*target.yml .
+    - cp ../../TEST-monitoring-core/App9/config_TESTversion_APPS9_Central*.yaml .
+    - cp ../../TEST-monitoring-core/App9/config_TESTversion_APPS9_MWS*.yaml .
+    - bash CopyFilesToShare.sh "$TF_VAR_region"
+    - cp ../App9/win/inventory.cfg .    
+    #- cp ../ansible/ansible.cfg .
+    - ansible-playbook -i inventory.cfg CopyAMMConfigFile.yml
+  only:
+    refs:
+    - Apps9_Test_Pipeline   
+    variables:
+        #- $TF_VAR_TESTversion == "app10" && $TF_VAR_keyvault_name == "mw1"
+        - $TF_VAR_TESTversion == "app9" && $TF_VAR_TESTrole == "mws"
+  tags:
+    - terraform-acc
+
+
+Execute AMM exporter :
+  stage: InstallAMMExporter
+  script:
+    - cd automation/TEST-monitoring-agents/AMM_Exporter
+    - cp ../../TEST-monitoring-core/App9/win/inventory.cfg .
+    - cp ../../TEST-monitoring-core/ansible/ansible.cfg .
+    - ansible-playbook -i inventory.cfg AMM-exporter.yml 
+  only:
+    refs:
+    - Apps9_Test_Pipeline
+    variables:
+        - $TF_VAR_TESTversion == "app9" && $TF_VAR_TESTrole == "mws"
+  tags:
+    - terraform-acc 
+
+Execute IIS Exporter:
+  stage: InstallTASIISAgents
+  script:
+    - cd automation/TEST-monitoring-agents
+    - cp ../TEST-monitoring-core/App9/win/inventory.cfg .
+    - cp ../TEST-monitoring-core/ansible/ansible.cfg .
+    - ansible-playbook -i inventory.cfg IIS-exporter.yml
+  only:
+    refs:
+    - Apps9_Test_Pipeline   
+    variables:
+        - $TF_VAR_TESTversion == "app9" && $TF_VAR_task == "wmi"
+  tags:
+    - terraform-acc
+
+
+
+Install Agents for MSSQL:
+  stage: InstallMSSQLAgents
+  script:
+    - cd automation/TEST-monitoring-agents
+    #- cp ../TEST-monitoring-core/Gen_inventory/win/inventory.cfg .
+#    - cp ../TEST-monitoring-core/ansible/ansible.cfg .
+    - cp ../TEST-monitoring-core/App9/win/inventory.cfg .
+    - cp ../TEST-monitoring-core/ansible/ansible.cfg .
+    - ansible-playbook -i inventory.cfg MSSQL-exporter.yml
+  only:
+    refs:
+    - Apps9_Test_Pipeline
+    variables:
+        - $TF_VAR_TESTversion == "app9" && $TF_VAR_task == "mssql"
+  tags:
+    - terraform-acc
+
+  
+Generate Var File for CMP :
+  stage: GenCMPVarFile
+  script:
+    - cd automation/terraform/file
+    - terraform get
+    - terraform init -input=false
+    - terraform plan  -input=false
+    - terraform apply -auto-approve
+  only:
+    refs:
+    - Apps9_Test_Pipeline
+    variables:
+        - $TF_VAR_TESTversion == "app9" && $TF_VAR_TESTrole == "ora"
+  tags:
+    - terraform-acc
+  artifacts:
+    paths:
+        - automation/terraform/file/export-variables.sh
+        - automation/terraform/file/ansible_vars_file.yml
+
+
+Generate CMP Inventory File:
+  stage: GenCMPInventory
+  script:
+    - cd automation/TEST-monitoring-core/ansible
+    - cp ../../terraform/file/export-variables.sh .
+    #- cp ../../TEST-monitoring-core/Get_exporter_varfile/export-cust-variables.sh .
+    - . export-variables.sh
+   # - . export-cust-variables.sh
+    - ALLREGION=${TF_VAR_region,,}
+    - export ALLREGION
+    - echo $ALLREGION
+    - cd ../script
+    - bash get_ip_infor.sh
+    - bash get_ip_infor_new.sh
+  only:
+    refs:
+    - Apps9_Test_Pipeline   
+    variables:
+        - $TF_VAR_TESTversion == "app9" && $TF_VAR_TESTrole == "ora"
+  tags:
+    - terraform-acc 
+  artifacts:
+    paths:
+      - automation/TEST-monitoring-core/ansible/inventory.cfg
+      - automation/TEST-monitoring-core/ansible/inventory_new.cfg
+
+
+Shell Script execution Oracle Exporter :
+  stage: OracleInventoryGen
+  script:
+    - cd automation/TEST-monitoring-agents/ORACLE_Exporter
+    - cp ../../TEST-monitoring-core/App9/hosts.txt .
+    - cp ../../TEST-monitoring-core/App9/GenerateOracleConfigFile.sh .
+    - cp ../../TEST-monitoring-core/App9/GetOracleDetails.sh .
+    - Customer=${TF_VAR_Hostname}
+    - echo $Customer
+    - bash GetOracleDetails.sh "$TF_VAR_Hostname"
+  only:
+    refs:
+    - Apps9_Test_Pipeline 
+    variables:
+        - $TF_VAR_TESTversion == "app9" && $TF_VAR_TESTrole == "ora"
+  tags:
+    - terraform-acc
+  artifacts:
+    paths:
+      - automation/TEST-monitoring-agents/ORACLE_Exporter/Inventory_ORACLE_DB_1.yml
+      - automation/TEST-monitoring-agents/ORACLE_Exporter/Inventory_ORACLE_DB_2.yml
+      - automation/TEST-monitoring-agents/ORACLE_Exporter/Inventory_ORACLE_DB_3.yml
+      - automation/TEST-monitoring-agents/ORACLE_Exporter/Inventory_ORACLE_DB_4.yml
+
+
+Execute Oracle Exporter:
+  stage: InstallOracleAgent
+  script:
+    - cd automation/TEST-monitoring-agents/ORACLE_Exporter
+    - cp ../../TEST-monitoring-core/ansible/inventory_new.cfg .
+    - cp ../../terraform/file/ansible_vars_file.yml .
+#   - cp Inventory_ORACLE_DB_1.yml ./oracledb-static-vars.yml
+    - bash Script.sh
+#   - ansible-playbook -i inventory_new.cfg oracle-node-exporter.yml 
+
+  only:
+    refs:
+    - Apps9_Test_Pipeline 
+    variables:
+        - $TF_VAR_TESTversion == "app9" && $TF_VAR_TESTrole == "ora"
+  tags:
+    - terraform-acc
+
+Update Prometheus Exporter Block :
+  stage: UpdatePromExpBlock
+  script:
+    - cd automation/TEST-monitoring-agents/prom-exporter-block
+    - cp ../../TEST-monitoring-core/ansible/inventory_new.cfg .
+    - cp ../../TEST-monitoring-core/Get_exporter_varfile/App9_Exporter_Vars/customer-oracledb-vars*.yml ./oracledb-static-vars.yml
+    - cp ../../terraform/file/export-variables.sh .
+    - cp ../ORACLE_Exporter/Inventory_ORACLE_DB_*.yml .
+#    - cp ../ORACLE_Exporter/ORACLE-cnf.yml .
+#    - cp ../../terraform/file/ansible_vars_file.yml .
+#    - cp ../../terraform/file/export-variables.sh .
+    - . export-variables.sh
+    - echo $mysqladmin_password
+    - ALLREGION=${TF_VAR_region,,}
+    - export ALLREGION
+    - echo $ALLREGION
+    - echo $PREFIX $ENV
+    - bash PromScript.sh 
+    - ansible-playbook -i inventory_new.cfg Prometheus.yml
+#   - ansible-playbook -i inventory_new.cfg prom-exporter-update.yml 
+  only:
+    refs:
+    - Apps9_Test_Pipeline   
+    variables:
+        - $TF_VAR_TESTversion == "app9" && $TF_VAR_TESTrole == "ora"
+  tags:
+    - terraform-acc 
+

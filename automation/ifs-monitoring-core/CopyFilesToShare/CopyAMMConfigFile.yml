@@ -1,0 +1,26 @@
+---
+- hosts: windows
+  gather_facts: no
+
+  tasks:
+  
+  - name: create a folder in the server
+    win_file:
+      path: G:\TESTmon\TESTamm_exporter\configs
+      state: directory
+
+  - name: Find the config file
+    find:
+      paths: ./
+      patterns: 'config_TESTversion_APPS9_MWS*.yaml'
+    delegate_to: localhost  
+    register: files_to_copy  
+
+  - debug:
+      var: files_to_copy
+
+  - name: copy config file to windows hosts
+    win_copy:
+      src: "{{ item.path }}"  
+      dest: G:\TESTmon\TESTamm_exporter\configs\
+    with_items: "{{ files_to_copy.files }}"  

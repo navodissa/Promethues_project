@@ -1,0 +1,12 @@
+- targets: ['10.241.16.152:9115']
+  labels:
+      name: test
+- targets: ['10.242.199.149:48093']
+  labels:
+      name: MWS_Node_Manager
+- targets: ['10.242.199.149:48090']
+  labels:
+      name: MWS_Admin_Server
+- targets: ['10.242.199.149:48080']
+  labels:
+      name: MWS_OHS_HTTP

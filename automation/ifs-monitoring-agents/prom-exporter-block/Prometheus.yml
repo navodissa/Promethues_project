@@ -1,0 +1,24 @@
+- hosts: prometheus-eu:prometheus-us
+  become: yes
+  tasks:
+
+  - name: Copy prometheus_contents from temp tp yml
+    shell: cat /usr/local/bin/prometheus/Test.yml >> /usr/local/bin/prometheus/prometheus.yml
+
+  - name: Reload system services
+    systemd:
+      daemon_reload: yes
+  
+  - name: Enable Prometheus service
+    systemd:
+      name: prometheus.service
+      enabled: yes
+
+  - name: Restart Prometheus as service
+    service:
+      name: prometheus
+      state: restarted
+      enabled: yes
+
+
+

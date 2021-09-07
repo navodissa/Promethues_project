@@ -1,0 +1,81 @@
+---
+- hosts: localhost
+  connection: local
+  tasks:
+#  - include_vars: oracledb-static-vars.yml
+  - include_vars: "{{ DB_Inventory_File }}"
+  
+#  - include_vars: ORACLE-cnf.yml
+
+  - name: Execute the shell script prom-exporter-update.sh to generate exporter block
+    local_action: script prom-exporter-update.sh
+    become_user: gitlab-runner
+    register: exp
+
+  #- name: Output of script
+  #  debug:
+  #    msg: "{{ sid }}"
+
+
+  
+
+- hosts: prometheus-eu:prometheus-us
+  become: yes
+  tasks:
+#  - include_vars: oracledb-static-vars.yml
+  - include_vars: "{{ DB_Inventory_File }}"
+
+  - name: Copy prometheus_ora_exporter_block.yml to tmp
+    copy:
+      src: prometheus_ora_exporter_block.yml
+      dest: /tmp/
+
+  - name: display file contents
+    shell: cat /tmp/prometheus_ora_exporter_block.yml
+    register: filedetails
+
+  - debug:
+      msg: "{{ filedetails.stdout_lines }}"
+
+  - name: Delete ora exporter block from /usr/local/bin/prometheus/prometheus.yml, if existing
+    shell: sed -i "/Section Start for {{ sid }} Exporter Block/,/Section End for {{ sid }} Exporter Block/d" /usr/local/bin/prometheus/prometheus.yml
+
+  - name: Append exporter block to /usr/local/bin/prometheus/prometheus.yml
+    shell: cat prometheus_ora_exporter_block.yml > /usr/local/bin/prometheus/Test.yml
+    args:
+      chdir: /tmp/
+
+  - name: Remove contents of file prometheus_ora_exporter_block.yml
+    command: true > prometheus_ora_exporter_block.yml
+    args:
+      chdir: /tmp/
+
+  - name: Copy prometheus_exporters_block.yml to tmp
+    copy:
+      src: prometheus_exporters_block.yml
+      dest: /tmp/
+
+  - name: Delete exporter block from /usr/local/bin/prometheus/prometheus.yml, if existing
+    shell: sed -i "/Section Start for {{ custid }} Exporter Block/,/Section End for {{ custid }} Exporter Block/d" /usr/local/bin/prometheus/prometheus.yml
+
+  - name: Append exporter block to /usr/local/bin/prometheus/prometheus.yml
+    shell: cat prometheus_exporters_block.yml >> /usr/local/bin/prometheus/prometheus.yml
+    args:
+      chdir: /tmp/
+
+#  - name: Reload system services
+#    systemd:
+#      daemon_reload: yes
+  
+#  - name: Enable Prometheus service
+#    systemd:
+#      name: prometheus.service
+#      enabled: yes
+
+#  - name: Restart Prometheus as service
+#    service:
+#      name: prometheus
+#      state: restarted
+#      enabled: yes
+
+

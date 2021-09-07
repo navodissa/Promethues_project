@@ -1,0 +1,41 @@
+---
+
+- hosts: prometheus
+  become: yes
+  become_method: sudo
+  roles:
+    - prometheus
+
+- hosts: prometheus
+  become: yes
+  become_method: sudo
+  roles:
+    - alert-manager
+
+- hosts: grafana
+  become: yes
+  become_method: sudo
+  roles:
+    - grafana
+ 
+- hosts: cortex
+  become: yes
+  become_method: sudo
+  roles:
+    - cortex
+
+- hosts: cassandra
+  become: yes
+  become_method: sudo
+  roles:
+    - cassandra
+- hosts: cortex
+  become: yes
+  become_method: sudo
+  roles:
+    - etcd
+
+
+
+
+

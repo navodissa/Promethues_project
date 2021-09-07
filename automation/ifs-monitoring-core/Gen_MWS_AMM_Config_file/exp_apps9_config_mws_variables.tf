@@ -8,7 +8,7 @@ variable "custcode" {}
 
 # *****Apps9 MWS variables*****
 
-variable "App9host_ip" {}
+variable "Apphost_ip" {}
 variable "MWS1_APPS_FQDN" {}
 variable "MWS1_USER" {}
 variable "MWS1_PASSWORD" {}

@@ -25,7 +25,7 @@
  token='d6b30e8b3d0321f99ff3e77b93590e';
  ref='Apps9_Test_Pipeline';
  "variables[TF_VAR_custcode]"="$custcode";
- "variables[TF_VAR_TESTversion]"="app9";
+ "variables[TF_VAR_TESTversion]"="App";
  "variables[TF_VAR_ResourceGroupName]"="$ResourceGroupName";
  "variables[TF_VAR_azure_subscription_id]"="$azure_subscription_id";
  "variables[TF_VAR_Hostname]"="$Hostname";

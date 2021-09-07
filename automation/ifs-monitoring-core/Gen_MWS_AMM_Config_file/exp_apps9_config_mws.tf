@@ -26,7 +26,7 @@ data "template_file" "cenvarfile" {
 
   // populate the template variables with these values
   vars = {
-    host_ip_local = "${var.App9host_ip}"
+    host_ip_local = "${var.Apphost_ip}"
     mws_TEST_password = "${var.MWS1_PASSWORD}"
     custid = "${var.custcode}"
     envtype = "${var.environmenttype}"

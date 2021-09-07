@@ -26,6 +26,6 @@ variable "TESTversion" {}
 
 variable "environmenttype" {}
 
-variable "App9host_ip" {}
+variable "Apphost_ip" {}
 
 

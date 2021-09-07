@@ -8,7 +8,7 @@
  
  #awk -vRS='' '/'$hostname'/{print}' hosts_tst.txt > host_details.txt
 
- #App9host_IP=`cat host_details.txt | grep address | awk '{print $2}'`
+ #Apphost_IP=`cat host_details.txt | grep address | awk '{print $2}'`
  fqdn=`cat host_details.txt | grep ${mws_var}_APPS_FQDN | awk '{print $2}'`
  mws_TESTmonitoring_user=`cat host_details.txt | grep _${mws_var}_APPS_MONITOR_USER | awk '{print $2}'`
  mws_TESTmonitoring_password=`cat host_details.txt | grep _${mws_var}_APPS_MONITOR_PASSWORD | awk '{print $2}'`

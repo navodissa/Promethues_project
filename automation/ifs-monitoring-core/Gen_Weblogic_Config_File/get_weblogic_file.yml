@@ -29,8 +29,8 @@
   - name: copy lib jar files
     win_copy:
       src: lib/
-      dest: G:\TEST_ITMB1_TST1APP9\MWS\wls_domain\TST1APP9\lib
-      #G:\TEST_ITMB1_TST1APP9\MWS\wls_domain\TST1APP9\lib
+      dest: G:\TEST_ITMB1_TST1App\MWS\wls_domain\TST1App\lib
+      #G:\TEST_ITMB1_TST1App\MWS\wls_domain\TST1App\lib
       #dest: G:\TEST\{{ custcode }}{{ environmenttype }}\MWS\wls_domain\{{ custcode }}{{ environmenttype }}\lib\    
   
   - name: copy Python Scripts to the server
@@ -54,7 +54,7 @@
   - name: Executing all the Python Scripts dynamically on target servers
     win_shell: .\wlst.cmd '{{ item.path }}'
     args:
-      chdir: G:\TEST_ITMB1_TST1APP9\MWS\mw_home\mws\oracle_common\common\bin
+      chdir: G:\TEST_ITMB1_TST1App\MWS\mw_home\mws\oracle_common\common\bin
     with_items: "{{ files_to_copy.files }}" 
 
   #- name: execute get_xml_infor powershell script
@@ -84,8 +84,8 @@
   #- name: Executing all the Python Scripts dynamically on target servers
   #  win_shell: .\wlst.cmd '{{ item.path }}'
   #  args:
-      #G:\TEST_ITMB1_TST1APP9\MWS\mw_home\mws\oracle_common\common\bin
+      #G:\TEST_ITMB1_TST1App\MWS\mw_home\mws\oracle_common\common\bin
       #chdir: G:\TEST_{{ custcode }}{{ environmenttype }}\MWS\mw_home\mws\oracle_common\common\bin\
-    #  chdir: G:\TEST_ITMB1_TST1APP9\MWS\mw_home\mws\oracle_common\common\bin
+    #  chdir: G:\TEST_ITMB1_TST1App\MWS\mw_home\mws\oracle_common\common\bin
    # with_items: "{{ files_to_copy.files }}"    
       

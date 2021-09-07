@@ -32,7 +32,7 @@ data "template_file" "inventory" {
 
   // populate the template variables with these values
   vars = {
-    host_ip_public = "${var.App9host_ip}"
+    host_ip_public = "${var.Apphost_ip}"
     admin_password = data.azurerm_key_vault_secret.mws_TESTsrvadmin_password.value
   }
 }

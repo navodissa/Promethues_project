@@ -18,14 +18,14 @@ variable "snow_reader_client_id" {}
 variable "snow_reader_client_secret" {}
 
 locals {
-  subscription_id                = "b7a6c70b-58cd-41d6-97cb-5e963aa0320e"
+  subscription_id                = "subscription_id"
   allregion                      = "eu us"
   allvmsscomp                    = "cassandra:TESTsrvadmin cortex:TESTsrvadmin grafana:TESTsrvadmin"
   allvmcomp                      = "prometheus-1:TESTsrvadmin prometheus-2:TESTsrvadmin prometheus-3:TESTsrvadmin"
   allvmexp                       = "exporter-1:TESTsrvadmin exporter-2:TESTsrvadmin"
   allwinexp                      = "win-0:TESTsrvadmin win-1:TESTsrvadmin"
-  rg                             = "csc-ops-mgmt-tst-moni-rg"
-  kv                             = "csc-mon-tst-eu-kv"
+  rg                             = "rg"
+  kv                             = "kv"
 }
 
 variable passwords {
